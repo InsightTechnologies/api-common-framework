@@ -1,10 +1,9 @@
-package com.miracle.common.utils;
+package com.miracle.api.service.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,15 +21,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.miracle.common.database.mongo.MongoDBUtility;
-import com.miracle.exception.GatewayServiceException;
+import com.miracle.exception.APIFrameworkException;
+import com.miracle.utility.DataUtility;
 
 @Component
 public class CommonUtil {
 	@Autowired
-	RestTemplate restTemplate;
+	private RestTemplate restTemplate;
 	@Autowired
-	MongoDBUtility mongoDBUtility;
+	private DataUtility dataUtility;
+	// MongoDBUtility mongoDBUtility;
 	@Value("${masterbot.retryCount}")
 	public String retryCount;
 	@Value("${masterbot.maxDelayTimeInSec}")
@@ -38,14 +38,14 @@ public class CommonUtil {
 
 	public static final Logger logger = LoggerFactory.getLogger(CommonUtil.class);
 	private static String EMPTY_LSIT = "MSB.COM.EML.000";
-	
-	public Map<String, String> getHeaderDetails()throws GatewayServiceException {
+
+	public Map<String, String> getHeaderDetails() throws APIFrameworkException {
 		Map<String, String> headerDetails = null;
-		try
-		{
-			headerDetails = mongoDBUtility.getScrumHeaderDetails();
-		}catch (Exception exception) {
-			throw new GatewayServiceException(exception.getMessage(),exception);
+		try {
+//			headerDetails = mongoDBUtility.getScrumHeaderDetails();
+			headerDetails = dataUtility.getScrumHeaderDetails();
+		} catch (Exception exception) {
+			throw new APIFrameworkException(exception.getMessage(), exception);
 		}
 		return headerDetails;
 	}
@@ -56,8 +56,6 @@ public class CommonUtil {
 		acceptableMediaTypes.add(applicationJson);
 		return acceptableMediaTypes;
 	}
-	
-	
 
 	/**
 	 * 
@@ -117,8 +115,10 @@ public class CommonUtil {
 
 					logger.error("Getting exception while hit  " + url + " ,Retry Count :: " + count
 							+ ", Exception Description ::" + interruptedException.getMessage());
-					throw new GatewayServiceException("Getting exception while hit  " + url + " ,Retry Count :: " + count
-							+ ", Exception Description ::" + interruptedException.getMessage() + "\r\n",interruptedException);
+					throw new APIFrameworkException(
+							"Getting exception while hit  " + url + " ,Retry Count :: " + count
+									+ ", Exception Description ::" + interruptedException.getMessage() + "\r\n",
+							interruptedException);
 				}
 			}
 		}
@@ -128,33 +128,31 @@ public class CommonUtil {
 		if (response == null) {
 			logger.error("Getting exception while hit  " + url + " , Exception Description :: "
 					+ exceptionMessage.toString());
-			throw new GatewayServiceException("Getting exception while hit  " + url + " , Exception Description :: "
+			throw new APIFrameworkException("Getting exception while hit  " + url + " , Exception Description :: "
 					+ exceptionMessage.toString());
 
 		}
 
 		return response;
 	}
-	
+
 	/**
 	 * Description - method to sort beans according to given property
 	 * 
-	 * @param beanList
-	 *            - List of beans
-	 * @param propertyToSortWith
-	 *            - String property name to sort the beanList.
+	 * @param beanList           - List of beans
+	 * @param propertyToSortWith - String property name to sort the beanList.
 	 */
-	public static void sortBeans(List<?> beanList, String propertyToSortWith)throws GatewayServiceException {
+	public static void sortBeans(List<?> beanList, String propertyToSortWith) throws APIFrameworkException {
 		// null check against the given bean List
-		if (beanList != null && beanList.size() >0) {
+		if (beanList != null && beanList.size() > 0) {
 			// create a comparator
 			Comparator<Object> propertyToCompareComparator = new BeanComparator<Object>(propertyToSortWith);
 			// sort the beans according to the given properties value
 			Collections.sort(beanList, propertyToCompareComparator);
 			Collections.reverse(beanList);
-		}else {
+		} else {
 			logger.error("Providied bean list is empty");
-			throw new GatewayServiceException("Providied bean list is empty",EMPTY_LSIT);
+			throw new APIFrameworkException("Providied bean list is empty", EMPTY_LSIT);
 		}
 	}
 }

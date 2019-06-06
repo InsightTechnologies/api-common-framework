@@ -7,18 +7,19 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 
 @Component
-public class GatewayServiceException extends Exception {
+public class APIFrameworkException extends Exception {
+
 	private static final long serialVersionUID = -816387637206481014L;
 	private static final String NUll_PONTER_EXCEPTION_CODE = "MSB.TE.NUL.000";
 	private static final String UNKNOWN_EXCEPTION_CODE = "MSB.UN.EXP.000";
 	private static final String UNKNOWN_GATEWAY_EXCEPTION_CODE = "MSB.UN.EXP.001";
-	private static final String JSON_PARSE_EXCEPTION_CODE="MSB.TE.PRS.000";
+	private static final String JSON_PARSE_EXCEPTION_CODE = "MSB.TE.PRS.000";
 	private static final String RUN_TIME_EXCEPTION_CODE = "MSB.RE.000";
-	private static final HttpStatus DEFAULT_STATUS_CODE  = HttpStatus.BAD_REQUEST;
-	
+	private static final HttpStatus DEFAULT_STATUS_CODE = HttpStatus.BAD_REQUEST;
+
 	private String errorCode;
 	private HttpStatus statusCode;
-	
+
 	public String getErrorCode() {
 		return errorCode;
 	}
@@ -35,21 +36,21 @@ public class GatewayServiceException extends Exception {
 		this.statusCode = statusCode;
 	}
 
-	public GatewayServiceException() {
+	public APIFrameworkException() {
 		super();
 	}
 
 	/**
 	 * @param message
 	 */
-	public GatewayServiceException(String message) {
+	public APIFrameworkException(String message) {
 		super(message);
 	}
 
 	/**
 	 * @param cause
 	 */
-	public GatewayServiceException(Throwable cause) {
+	public APIFrameworkException(Throwable cause) {
 		super(cause);
 	}
 
@@ -57,39 +58,39 @@ public class GatewayServiceException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public GatewayServiceException(String message, Throwable cause) {
+	public APIFrameworkException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
 	/**
 	 * 
 	 * @param message
 	 * @param cause
 	 * @param errorCode
 	 */
-	public GatewayServiceException(String message, Throwable cause,String errorCode) {
+	public APIFrameworkException(String message, Throwable cause, String errorCode) {
 		super(message, cause);
 		setErrorCode(errorCode);
 	}
-	
+
 	/**
 	 * 
 	 * @param message
 	 * @param cause
 	 * @param errorCode
 	 */
-	public GatewayServiceException(String message, Throwable cause,String errorCode,HttpStatus statusCode) {
+	public APIFrameworkException(String message, Throwable cause, String errorCode, HttpStatus statusCode) {
 		super(message, cause);
 		setErrorCode(errorCode);
 		setStatusCode(statusCode);
 	}
-	
+
 	/**
 	 * 
 	 * @param message
 	 * @param errorCode
 	 */
-	public GatewayServiceException(String message, String errorCode) {
+	public APIFrameworkException(String message, String errorCode) {
 		super(message);
 		setErrorCode(errorCode);
 	}
@@ -100,53 +101,52 @@ public class GatewayServiceException extends Exception {
 	 * @param enableSuppression
 	 * @param writableStackTrace
 	 */
-	public GatewayServiceException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
+	public APIFrameworkException(String message, Throwable cause, boolean enableSuppression,
+			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public APIFrameworkException(String string, String unableToOrderFeatureList, HttpStatus internalServerError) {
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * Gets the error code.
 	 *
-	 * @param throwable
-	 *            the throwable
+	 * @param throwable the throwable
 	 * @return string -return custom error code of exception
 	 */
 
-	public String getErrorCode(Throwable throwable,
-			APIExceptionResponse apiExceptionResponse) {
+	public String getErrorCode(Throwable throwable, APIExceptionResponse apiExceptionResponse) {
 		Throwable exception = (ExceptionUtils.getRootCause(throwable) == null) ? throwable
 				: ExceptionUtils.getRootCause(throwable);
 		String errorCode;
 		if (exception instanceof NullPointerException) {
 			errorCode = NUll_PONTER_EXCEPTION_CODE;
 			apiExceptionResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
-		} 
-		else if (exception instanceof JsonParseException) {
-			 errorCode = JSON_PARSE_EXCEPTION_CODE;
-		} 
-		else if (exception instanceof RuntimeException) {
-				 errorCode = RUN_TIME_EXCEPTION_CODE;
-		} 
-		else if (exception instanceof GatewayServiceException) {
-			GatewayServiceException gatewayServiceException = (GatewayServiceException) exception;
-			if(gatewayServiceException.getErrorCode() != null && !gatewayServiceException.getErrorCode().isEmpty()){
+		} else if (exception instanceof JsonParseException) {
+			errorCode = JSON_PARSE_EXCEPTION_CODE;
+		} else if (exception instanceof RuntimeException) {
+			errorCode = RUN_TIME_EXCEPTION_CODE;
+		} else if (exception instanceof APIFrameworkException) {
+			APIFrameworkException gatewayServiceException = (APIFrameworkException) exception;
+			if (gatewayServiceException.getErrorCode() != null && !gatewayServiceException.getErrorCode().isEmpty()) {
 				errorCode = gatewayServiceException.getErrorCode();
-			}else {
+			} else {
 				errorCode = UNKNOWN_GATEWAY_EXCEPTION_CODE;
 			}
-			if(gatewayServiceException.getStatusCode().value() > 0){
+			if (gatewayServiceException.getStatusCode().value() > 0) {
 				apiExceptionResponse.setStatusCode(gatewayServiceException.getStatusCode());
-			}else {
+			} else {
 				apiExceptionResponse.setStatusCode(DEFAULT_STATUS_CODE);
 			}
-			
-		} 
-		
+
+		}
+
 		else {
 			errorCode = UNKNOWN_EXCEPTION_CODE;
 		}
 		return errorCode;
 	}
-	
+
 }
